@@ -14,6 +14,10 @@ const Discover = () => {
   const [type, setType] = useState("restaurants")
   const [isLoading, setIsLoading] = useState(false)
   const [mainData, setMainData] = useState([])
+  const [bl_lat, setBl_lat] = useState(null)
+  const [bl_lng, setBl_lng] = useState(null)
+  const [tr_lat, setTr_lat] = useState(null)
+  const [tr_lng, setTr_lng] = useState(null)
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -23,13 +27,13 @@ const Discover = () => {
 
   useEffect(()=>{
     setIsLoading(true)
-    getPlacesData().then(data => {
+    getPlacesData(bl_lat, bl_lng, tr_lat, tr_lng, type).then(data => {
       setMainData(data)
       setInterval(()=>{
         setIsLoading(false)
       }, 2000)
     })
-  }, [])
+  }, [bl_lat, bl_lng, tr_lat, tr_lng, type])
 
   return (
     <SafeAreaView className="flex-1 bg-white relative">
@@ -56,6 +60,10 @@ const Discover = () => {
           // 'details' is provided when fetchDetails = true
           // console.log(data, details);
           console.log(details?.geometry?.viewport)
+          setBl_lat(details?.geometry?.viewport?.southwest?.lat)
+          setBl_lng(details?.geometry?.viewport?.southwest?.lng)
+          setTr_lat(details?.geometry?.viewport?.northeast?.lat)
+          setTr_lng(details?.geometry?.viewport?.northeast?.lng)
         }}
         query={{
           key: API_KEY,
@@ -105,25 +113,21 @@ const Discover = () => {
         </View>
         
         <View className="px-4 mt-8 flex-row items-center justify-evenly flex-wrap">
-          {/* <ItemCardContainer key={"101"} imageSrc={"https://cdn.pixabay.com/photo/2023/02/03/15/27/bird-7765384_960_720.jpg"} 
-          title="Something" 
-          location="Doha"
-          />
-          <ItemCardContainer key={"102"} imageSrc={"https://cdn.pixabay.com/photo/2017/02/07/16/47/kingfisher-2046453_960_720.jpg"} 
-          title="Sample" 
-          location="Qatar"
-          /> */}
           {
           mainData?.length > 0 ?
           <>
-            <ItemCardContainer key={"101"} imageSrc={"https://cdn.pixabay.com/photo/2023/02/03/15/27/bird-7765384_960_720.jpg"} 
-            title="Something" 
-            location="Doha"
+          {mainData?.map((data, i)=>(
+            <ItemCardContainer key={i} 
+            imageSrc={
+              data?.photo?.images?.medium?.url ?
+              data?.photo?.images?.medium?.url :
+              "https://cdn.pixabay.com/photo/2017/02/07/16/47/kingfisher-2046453_960_720.jpg"
+            } 
+            title={data?.name} 
+            location={data?.location_string}
+            data={data}
             />
-            <ItemCardContainer key={"102"} imageSrc={"https://cdn.pixabay.com/photo/2017/02/07/16/47/kingfisher-2046453_960_720.jpg"} 
-            title="Sample" 
-            location="Qatar"
-            />
+          ))}
           </>
           :
           <>
